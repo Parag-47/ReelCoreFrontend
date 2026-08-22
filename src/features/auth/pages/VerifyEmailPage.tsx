@@ -1,100 +1,132 @@
-import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Loader2, MailQuestion } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Loader as Loader2, CircleCheck as CheckCircle2, Circle as XCircle, MailWarning } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { ApiError } from '@/lib/api-client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Brand } from '../components/Brand';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { routes } from '@/config/routes';
 
+type VerifyState = 'loading' | 'success' | 'error' | 'missing';
+
 export function VerifyEmailPage() {
-  const { verifyEmail } = useAuth();
+  const { verifyEmail, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
 
-  const [token, setToken] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [state, setState] = useState<VerifyState>(token ? 'loading' : 'missing');
+  const [message, setMessage] = useState<string | null>(null);
+  const ranRef = useRef(false);
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (isSubmitting || !token.trim()) return;
-
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      await verifyEmail({ token: token.trim() });
-      navigate(routes.dashboard);
-    } catch (err) {
-      const message =
-        err instanceof ApiError ? err.message : 'Verification failed. Please try again.';
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
+  useEffect(() => {
+    if (ranRef.current) return;
+    if (!token) {
+      setState('missing');
+      return;
     }
-  }
+    ranRef.current = true;
+
+    (async () => {
+      try {
+        await verifyEmail({ token });
+        setState('success');
+      } catch (err) {
+        setState('error');
+        setMessage(
+          err instanceof ApiError
+            ? err.message
+            : 'Verification failed. Please try again.',
+        );
+      }
+    })();
+  }, [token, verifyEmail]);
+
+  useEffect(() => {
+    if (state === 'success') {
+      const t = setTimeout(() => {
+        navigate(isAuthenticated ? routes.dashboard : routes.login, {
+          replace: true,
+        });
+      }, 2000);
+      return () => clearTimeout(t);
+    }
+  }, [state, navigate, isAuthenticated]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+    <div className="relative flex min-h-screen items-center justify-center bg-background px-4 py-12">
+      <div className="absolute right-4 top-4">
+        <ThemeToggle />
+      </div>
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-6">
           <Brand className="justify-center" />
-          <div className="space-y-1.5 text-center">
-            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-              <MailQuestion className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <h1 className="text-2xl font-semibold tracking-tight">Verify your email</h1>
-            <p className="text-sm text-muted-foreground">
-              We sent a verification code to your email address.
-            </p>
-          </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            <div className="space-y-2">
-              <Label htmlFor="verify-token">Verification code</Label>
-              <Input
-                id="verify-token"
-                type="text"
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                disabled={isSubmitting}
-                placeholder="Enter your verification code"
-                autoComplete="one-time-code"
-              />
+          {state === 'loading' && (
+            <div className="flex flex-col items-center gap-4 py-8 text-center">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <div className="space-y-1">
+                <h1 className="text-lg font-semibold tracking-tight">
+                  Verifying your email...
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Please wait while we confirm your account.
+                </p>
+              </div>
             </div>
+          )}
 
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+          {state === 'success' && (
+            <div className="flex flex-col items-center gap-4 py-8 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="space-y-1">
+                <h1 className="text-lg font-semibold tracking-tight">
+                  Email verified successfully.
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Redirecting you to your dashboard...
+                </p>
+              </div>
+            </div>
+          )}
 
-            <Button type="submit" className="w-full" disabled={isSubmitting || !token.trim()}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Verifying...
-                </>
-              ) : (
-                'Verify'
-              )}
-            </Button>
-          </form>
+          {state === 'error' && (
+            <div className="flex flex-col items-center gap-4 py-8 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                <XCircle className="h-6 w-6 text-destructive" />
+              </div>
+              <div className="space-y-1">
+                <h1 className="text-lg font-semibold tracking-tight">
+                  Verification failed
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {message ??
+                    'The verification link is invalid or has expired.'}
+                </p>
+              </div>
+            </div>
+          )}
 
-          <p className="mt-4 text-center text-sm text-muted-foreground">
-            Didn't receive it? Check your spam folder or{' '}
-            <button
-              type="button"
-              className="font-medium text-foreground hover:underline"
-              onClick={() => navigate(routes.register)}
-            >
-              try again
-            </button>
-          </p>
+          {state === 'missing' && (
+            <div className="flex flex-col items-center gap-4 py-8 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <MailWarning className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <div className="space-y-1">
+                <h1 className="text-lg font-semibold tracking-tight">
+                  Invalid verification link
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  The verification link is missing a token. Please use the link
+                  from your email.
+                </p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

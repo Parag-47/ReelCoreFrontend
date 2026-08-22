@@ -9,9 +9,10 @@ import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 import { routes } from '@/config/routes';
 
 function RootRedirect() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, error } = useAuth();
 
   if (isLoading) return <PageLoader />;
+  if (error) return <PageLoader />;
   return (
     <Navigate to={isAuthenticated ? routes.dashboard : routes.login} replace />
   );

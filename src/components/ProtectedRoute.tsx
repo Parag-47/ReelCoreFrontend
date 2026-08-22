@@ -9,9 +9,13 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, error } = useAuth();
 
   if (isLoading) {
+    return <PageLoader />;
+  }
+
+  if (error) {
     return <PageLoader />;
   }
 

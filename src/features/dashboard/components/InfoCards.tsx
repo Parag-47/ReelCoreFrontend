@@ -1,4 +1,4 @@
-import { ShieldCheck, KeyRound, UserCircle, BadgeCheck } from 'lucide-react';
+import { ShieldCheck, KeyRound, CircleUser as UserCircle, BadgeCheck } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import type { DashboardInfo } from '../dashboard.types';
@@ -59,12 +59,15 @@ export function AccountCard({ verified }: { verified: boolean }) {
   );
 }
 
-export function StatusCard() {
+export function StatusCard({ status }: { status: string }) {
   return (
     <InfoCard
       icon={<BadgeCheck className="h-4 w-4" />}
       title="Status"
-      info={{ label: 'Active', value: 'Session is valid' }}
+      info={{
+        label: status.charAt(0).toUpperCase() + status.slice(1),
+        value: 'Account status',
+      }}
     />
   );
 }

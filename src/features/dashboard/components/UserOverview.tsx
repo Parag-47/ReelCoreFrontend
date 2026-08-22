@@ -1,6 +1,18 @@
-import { Mail, AtSign } from 'lucide-react';
+import { Mail, AtSign, Calendar, Clock } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { Separator } from '@/components/ui/separator';
+
+function formatDate(value: string | null): string {
+  if (!value) return 'Not available';
+  try {
+    return new Date(value).toLocaleString(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+  } catch {
+    return value;
+  }
+}
 
 export function UserOverview() {
   const { user } = useAuth();
@@ -27,6 +39,20 @@ export function UserOverview() {
           <dt className="text-sm text-muted-foreground">Username</dt>
           <dd className="ml-auto text-sm font-medium">
             {user.username || 'Not set'}
+          </dd>
+        </div>
+        <div className="flex items-center gap-3">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <dt className="text-sm text-muted-foreground">Joined</dt>
+          <dd className="ml-auto text-sm font-medium">
+            {formatDate(user.createdAt)}
+          </dd>
+        </div>
+        <div className="flex items-center gap-3">
+          <Clock className="h-4 w-4 text-muted-foreground" />
+          <dt className="text-sm text-muted-foreground">Last login</dt>
+          <dd className="ml-auto text-sm font-medium">
+            {formatDate(user.lastLoginAt)}
           </dd>
         </div>
       </dl>

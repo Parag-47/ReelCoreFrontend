@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader as Loader2, MailCheck } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { ApiError } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
@@ -9,10 +9,12 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { GoogleButton } from './GoogleButton';
+import { registerSchema } from '../schemas/register.schema';
 import { routes } from '@/config/routes';
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MIN_PASSWORD_LENGTH = 8;
+type RegisterFormErrors = Partial<
+  Record<'email' | 'username' | 'password' | 'confirmPassword' | 'form', string>
+>;
 
 export function RegisterForm() {
   const { register, loginWithGoogle } = useAuth();
@@ -23,42 +25,28 @@ export function RegisterForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{
-    email?: string;
-    username?: string;
-    password?: string;
-    confirmPassword?: string;
-    form?: string;
-  }>({});
+  const [errors, setErrors] = useState<RegisterFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
 
   function validate(): boolean {
-    const next: typeof errors = {};
-
-    if (!email) {
-      next.email = 'Email is required.';
-    } else if (!EMAIL_REGEX.test(email)) {
-      next.email = 'Please enter a valid email address.';
+    const result = registerSchema.safeParse({
+      email,
+      username: username || '',
+      password,
+      confirmPassword,
+    });
+    if (!result.success) {
+      const fieldErrors: RegisterFormErrors = {};
+      for (const issue of result.error.issues) {
+        const field = issue.path[0] as keyof RegisterFormErrors;
+        if (!fieldErrors[field]) fieldErrors[field] = issue.message;
+      }
+      setErrors(fieldErrors);
+      return false;
     }
-
-    if (username && username.length < 3) {
-      next.username = 'Username must be at least 3 characters.';
-    }
-
-    if (!password) {
-      next.password = 'Password is required.';
-    } else if (password.length < MIN_PASSWORD_LENGTH) {
-      next.password = `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`;
-    }
-
-    if (!confirmPassword) {
-      next.confirmPassword = 'Please confirm your password.';
-    } else if (password !== confirmPassword) {
-      next.confirmPassword = 'Passwords do not match.';
-    }
-
-    setErrors(next);
-    return Object.keys(next).length === 0;
+    setErrors({});
+    return true;
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -74,14 +62,44 @@ export function RegisterForm() {
         password,
         username: username || undefined,
       });
-      navigate(routes.verifyEmail);
+      setIsComplete(true);
     } catch (err) {
       const message =
-        err instanceof ApiError ? err.message : 'Something went wrong. Please try again.';
+        err instanceof ApiError
+          ? err.message
+          : 'Something went wrong. Please try again.';
       setErrors({ form: message });
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (isComplete) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-8 text-center">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+          <MailCheck className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <div className="space-y-1.5">
+          <h2 className="text-lg font-semibold tracking-tight">
+            Check your email
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            We sent a verification link to{' '}
+            <span className="font-medium text-foreground">{email}</span>. Click
+            the link in the email to verify your account.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={() => navigate(routes.login)}
+        >
+          Back to sign in
+        </Button>
+      </div>
+    );
   }
 
   return (
@@ -108,7 +126,8 @@ export function RegisterForm() {
 
         <div className="space-y-2">
           <Label htmlFor="register-username">
-            Username <span className="text-muted-foreground font-normal">(optional)</span>
+            Username{' '}
+            <span className="text-muted-foreground font-normal">(optional)</span>
           </Label>
           <Input
             id="register-username"
@@ -118,7 +137,9 @@ export function RegisterForm() {
             onChange={(e) => setUsername(e.target.value)}
             disabled={isSubmitting}
             aria-invalid={!!errors.username}
-            aria-describedby={errors.username ? 'register-username-error' : undefined}
+            aria-describedby={
+              errors.username ? 'register-username-error' : undefined
+            }
           />
           {errors.username && (
             <p id="register-username-error" className="text-sm text-destructive">
@@ -139,7 +160,9 @@ export function RegisterForm() {
               disabled={isSubmitting}
               className="pr-10"
               aria-invalid={!!errors.password}
-              aria-describedby={errors.password ? 'register-password-error' : undefined}
+              aria-describedby={
+                errors.password ? 'register-password-error' : undefined
+              }
             />
             <button
               type="button"
@@ -173,11 +196,16 @@ export function RegisterForm() {
             disabled={isSubmitting}
             aria-invalid={!!errors.confirmPassword}
             aria-describedby={
-              errors.confirmPassword ? 'register-confirm-password-error' : undefined
+              errors.confirmPassword
+                ? 'register-confirm-password-error'
+                : undefined
             }
           />
           {errors.confirmPassword && (
-            <p id="register-confirm-password-error" className="text-sm text-destructive">
+            <p
+              id="register-confirm-password-error"
+              className="text-sm text-destructive"
+            >
               {errors.confirmPassword}
             </p>
           )}

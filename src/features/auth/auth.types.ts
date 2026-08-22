@@ -1,12 +1,16 @@
 export interface User {
   id: string;
   email: string;
-  username?: string;
-  isVerified?: boolean;
+  username: string | null;
+  emailVerified: boolean;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  lastLoginAt: string | null;
   authProvider?: AuthProvider;
 }
 
-export type AuthProvider = "email" | "google" | "passkey";
+export type AuthProvider = 'email' | 'google' | 'passkey';
 
 export interface LoginRequest {
   identifier: string;

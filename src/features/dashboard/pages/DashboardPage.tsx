@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, LogOut } from 'lucide-react';
+import { Loader as Loader2, LogOut } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Brand } from '@/features/auth/components/Brand';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { UserOverview } from '../components/UserOverview';
 import {
   AuthenticatedCard,
@@ -26,7 +27,6 @@ export function DashboardPage() {
       await logout();
       navigate(routes.login, { replace: true });
     } catch {
-      // logout() clears local state even on network failure
       navigate(routes.login, { replace: true });
     } finally {
       setIsLoggingOut(false);
@@ -42,19 +42,22 @@ export function DashboardPage() {
       <header className="border-b">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
           <Brand />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-          >
-            {isLoggingOut ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <LogOut className="h-4 w-4" />
-            )}
-            Sign out
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+            >
+              {isLoggingOut ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <LogOut className="h-4 w-4" />
+              )}
+              Sign out
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -66,8 +69,8 @@ export function DashboardPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           <AuthenticatedCard />
           <ProviderCard provider={providerLabel} />
-          <AccountCard verified={user?.isVerified ?? false} />
-          <StatusCard />
+          <AccountCard verified={user?.emailVerified ?? false} />
+          <StatusCard status={user?.status ?? 'active'} />
         </div>
       </main>
     </div>

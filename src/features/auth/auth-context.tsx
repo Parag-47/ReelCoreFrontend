@@ -20,6 +20,7 @@ interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  error: Error | null;
   login: (payload: LoginRequest) => Promise<void>;
   register: (payload: RegisterRequest) => Promise<void>;
   verifyEmail: (payload: VerifyEmailRequest) => Promise<void>;
@@ -33,14 +34,29 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const currentUser = await authApi.getCurrentUser();
-      if (!cancelled) {
-        setUser(currentUser);
-        setIsLoading(false);
+      try {
+        const currentUser = await authApi.getCurrentUser();
+        if (!cancelled) {
+          setUser(currentUser);
+          setError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(
+            err instanceof Error
+              ? err
+              : new Error('Failed to restore session.'),
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     })();
     return () => {
@@ -78,7 +94,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authApi.logout();
     } catch (err) {
-      // Even if the backend call fails, clear local state and redirect.
       if (err instanceof ApiError && err.status === 0) {
         // network failure — still clear locally
       } else {
@@ -92,6 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     isAuthenticated: user !== null,
     isLoading,
+    error,
     login,
     register,
     verifyEmail,
