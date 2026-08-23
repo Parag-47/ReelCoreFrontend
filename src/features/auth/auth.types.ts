@@ -39,6 +39,21 @@ export interface PasskeyOptionsResponse {
   timeout?: number;
 }
 
+export interface PasskeyRegistrationOptionsResponse {
+  challenge: string;
+  rp?: { name: string; id?: string };
+  user?: {
+    id: string;
+    name?: string;
+    displayName?: string;
+  };
+  pubKeyCredParams?: Array<{ type: string; alg: number }>;
+  timeout?: number;
+  excludeCredentials?: Array<{ id: string; type: string }>;
+  authenticatorSelection?: Record<string, unknown>;
+  attestation?: string;
+}
+
 export interface PasskeyVerifyRequest {
   credential: unknown;
 }

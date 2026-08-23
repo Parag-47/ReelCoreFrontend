@@ -25,3 +25,21 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   return <>{children}</>;
 }
+
+export function GuestRoute({ children }: ProtectedRouteProps) {
+  const { isAuthenticated, isLoading, error } = useAuth();
+
+  if (isLoading) {
+    return <PageLoader />;
+  }
+
+  if (error) {
+    return <PageLoader />;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to={routes.dashboard} replace />;
+  }
+
+  return <>{children}</>;
+}

@@ -13,7 +13,7 @@ import type {
   RegisterRequest,
   VerifyEmailRequest,
 } from './auth.types';
-import { authenticateWithPasskey } from './passkey';
+import { authenticateWithPasskey, registerWithPasskey } from './passkey';
 import { ApiError } from '@/lib/api-client';
 
 interface AuthContextValue {
@@ -25,6 +25,7 @@ interface AuthContextValue {
   register: (payload: RegisterRequest) => Promise<void>;
   verifyEmail: (payload: VerifyEmailRequest) => Promise<void>;
   loginWithPasskey: () => Promise<void>;
+  registerPasskey: () => Promise<void>;
   loginWithGoogle: () => void;
   logout: () => Promise<void>;
 }
@@ -86,6 +87,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(user);
   }, []);
 
+  const registerPasskey = useCallback(async () => {
+    const options = await authApi.getPasskeyRegistrationOptions();
+    const credential = await registerWithPasskey(options);
+    const user = await authApi.verifyPasskeyRegistration({ credential });
+    setUser(user);
+  }, []);
+
   const loginWithGoogle = useCallback(() => {
     window.location.assign(authApi.getGoogleOAuthUrl());
   }, []);
@@ -112,6 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register,
     verifyEmail,
     loginWithPasskey,
+    registerPasskey,
     loginWithGoogle,
     logout,
   };

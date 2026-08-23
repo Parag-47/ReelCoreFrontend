@@ -4,6 +4,7 @@ import type {
   RegisterRequest,
   VerifyEmailRequest,
   PasskeyOptionsResponse,
+  PasskeyRegistrationOptionsResponse,
   PasskeyVerifyRequest,
   User,
 } from '../auth.types';
@@ -105,6 +106,20 @@ export const authApi = {
   async verifyPasskey(payload: PasskeyVerifyRequest): Promise<User> {
     const res = await apiClient.post<BackendAuthResponse>(
       '/auth/passkey/verify',
+      payload,
+    );
+    return extractUser(res);
+  },
+
+  async getPasskeyRegistrationOptions(): Promise<PasskeyRegistrationOptionsResponse> {
+    return apiClient.get<PasskeyRegistrationOptionsResponse>(
+      '/auth/passkey/registration-options',
+    );
+  },
+
+  async verifyPasskeyRegistration(payload: PasskeyVerifyRequest): Promise<User> {
+    const res = await apiClient.post<BackendAuthResponse>(
+      '/auth/passkey/registration/verify',
       payload,
     );
     return extractUser(res);

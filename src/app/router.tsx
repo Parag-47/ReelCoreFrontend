@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/features/auth/hooks/useAuth';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { ProtectedRoute, GuestRoute } from '@/components/ProtectedRoute';
 import { PageLoader } from '@/components/PageLoader';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
@@ -24,8 +24,22 @@ export function AppRouter() {
       <AuthProvider>
         <Routes>
           <Route path={routes.root} element={<RootRedirect />} />
-          <Route path={routes.login} element={<LoginPage />} />
-          <Route path={routes.register} element={<RegisterPage />} />
+          <Route
+            path={routes.login}
+            element={
+              <GuestRoute>
+                <LoginPage />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path={routes.register}
+            element={
+              <GuestRoute>
+                <RegisterPage />
+              </GuestRoute>
+            }
+          />
           <Route path={routes.verifyEmail} element={<VerifyEmailPage />} />
           <Route
             path={routes.dashboard}
