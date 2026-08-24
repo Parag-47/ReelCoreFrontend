@@ -5,16 +5,16 @@ import {
   useEffect,
   useCallback,
   type ReactNode,
-} from 'react';
-import { authApi } from './api/auth.api';
+} from "react";
+import { authApi } from "./api/auth.api";
 import type {
   User,
   LoginRequest,
   RegisterRequest,
   VerifyEmailRequest,
-} from './auth.types';
-import { authenticateWithPasskey, registerWithPasskey } from './passkey';
-import { ApiError } from '@/lib/api-client';
+} from "./auth.types";
+import { authenticateWithPasskey, registerWithPasskey } from "./passkey";
+import { ApiError } from "@/lib/api-client";
 
 interface AuthContextValue {
   user: User | null;
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setError(
             err instanceof Error
               ? err
-              : new Error('Failed to restore session.'),
+              : new Error("Failed to restore session."),
           );
         }
       } finally {
@@ -88,7 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const registerPasskey = useCallback(async () => {
-    const options = await authApi.getPasskeyRegistrationOptions();
+    const { data: options } = await authApi.getPasskeyRegistrationOptions();
+    console.log(options);
     const credential = await registerWithPasskey(options);
     const user = await authApi.verifyPasskeyRegistration({ credential });
     setUser(user);
@@ -131,7 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return ctx;
 }

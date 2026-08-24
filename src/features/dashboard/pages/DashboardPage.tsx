@@ -1,21 +1,26 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Loader as Loader2, LogOut, Fingerprint, CircleCheck as CheckCircle2 } from 'lucide-react';
-import { useAuth } from '@/features/auth/hooks/useAuth';
-import { ApiError } from '@/lib/api-client';
-import { isPasskeySupported } from '@/features/auth/passkey';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Brand } from '@/features/auth/components/Brand';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { UserOverview } from '../components/UserOverview';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Loader as Loader2,
+  LogOut,
+  Fingerprint,
+  CircleCheck as CheckCircle2,
+} from "lucide-react";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { ApiError } from "@/lib/api-client";
+import { isPasskeySupported } from "@/features/auth/passkey";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Brand } from "@/features/auth/components/Brand";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { UserOverview } from "../components/UserOverview";
 import {
   AuthenticatedCard,
   ProviderCard,
   AccountCard,
   StatusCard,
-} from '../components/InfoCards';
-import { routes } from '@/config/routes';
+} from "../components/InfoCards";
+import { routes } from "@/config/routes";
 
 export function DashboardPage() {
   const { user, logout, registerPasskey } = useAuth();
@@ -47,10 +52,11 @@ export function DashboardPage() {
       await registerPasskey();
       setPasskeySuccess(true);
     } catch (err) {
+      console.log(err);
       const message =
         err instanceof ApiError
           ? err.message
-          : 'Could not register passkey. Please try again.';
+          : "Could not register passkey. Please try again.";
       setPasskeyError(message);
     } finally {
       setIsRegisteringPasskey(false);
@@ -59,7 +65,7 @@ export function DashboardPage() {
 
   const providerLabel = user?.authProvider
     ? user.authProvider.charAt(0).toUpperCase() + user.authProvider.slice(1)
-    : 'Email';
+    : "Email";
 
   return (
     <div className="min-h-screen bg-background">
@@ -94,7 +100,7 @@ export function DashboardPage() {
           <AuthenticatedCard />
           <ProviderCard provider={providerLabel} />
           <AccountCard verified={user?.emailVerified ?? false} />
-          <StatusCard status={user?.status ?? 'active'} />
+          <StatusCard status={user?.status ?? "active"} />
         </div>
 
         {isPasskeySupported() && (

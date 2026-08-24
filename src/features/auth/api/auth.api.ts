@@ -1,4 +1,4 @@
-import { apiClient, ApiError } from '@/lib/api-client';
+import { apiClient, ApiError } from "@/lib/api-client";
 import type {
   LoginRequest,
   RegisterRequest,
@@ -7,8 +7,8 @@ import type {
   PasskeyRegistrationOptionsResponse,
   PasskeyVerifyRequest,
   User,
-} from '../auth.types';
-import { env } from '@/config/env';
+} from "../auth.types";
+import { env } from "@/config/env";
 
 // --- Backend response shapes (kept private to this adapter) ---
 
@@ -38,13 +38,13 @@ interface BackendAuthResponse {
 
 function mapUser(raw: BackendUser): User {
   return {
-    id: raw.id ?? raw._id ?? '',
-    email: raw.email ?? '',
+    id: raw.id ?? raw._id ?? "",
+    email: raw.email ?? "",
     username: raw.username ?? null,
     emailVerified: raw.emailVerified ?? raw.verified ?? raw.isVerified ?? false,
-    status: raw.status ?? 'active',
-    createdAt: raw.createdAt ?? '',
-    updatedAt: raw.updatedAt ?? '',
+    status: raw.status ?? "active",
+    createdAt: raw.createdAt ?? "",
+    updatedAt: raw.updatedAt ?? "",
     lastLoginAt: raw.lastLoginAt ?? null,
     authProvider: normalizeProvider(raw.authProvider ?? raw.provider),
   };
@@ -52,18 +52,18 @@ function mapUser(raw: BackendUser): User {
 
 function normalizeProvider(
   value?: string,
-): 'email' | 'google' | 'passkey' | undefined {
+): "email" | "google" | "passkey" | undefined {
   if (!value) return undefined;
   const v = value.toLowerCase();
-  if (v === 'google' || v === 'oauth') return 'google';
-  if (v === 'passkey' || v === 'webauthn') return 'passkey';
-  return 'email';
+  if (v === "google" || v === "oauth") return "google";
+  if (v === "passkey" || v === "webauthn") return "passkey";
+  return "email";
 }
 
 function extractUser(res: BackendAuthResponse): User {
   const raw = res.user ?? res.data;
   if (!raw) {
-    throw new Error('Unexpected server response: no user data returned.');
+    throw new Error("Unexpected server response: no user data returned.");
   }
   return mapUser(raw);
 }
@@ -73,7 +73,7 @@ function extractUser(res: BackendAuthResponse): User {
 export const authApi = {
   async login(payload: LoginRequest): Promise<User> {
     const res = await apiClient.post<BackendAuthResponse>(
-      '/auth/login',
+      "/auth/login",
       payload,
     );
     return extractUser(res);
@@ -81,7 +81,7 @@ export const authApi = {
 
   async register(payload: RegisterRequest): Promise<User> {
     const res = await apiClient.post<BackendAuthResponse>(
-      '/auth/register',
+      "/auth/register",
       payload,
     );
     return extractUser(res);
@@ -89,23 +89,23 @@ export const authApi = {
 
   async verifyEmail(payload: VerifyEmailRequest): Promise<User> {
     const res = await apiClient.post<BackendAuthResponse>(
-      '/auth/verify',
+      "/auth/verify",
       payload,
     );
     return extractUser(res);
   },
 
   async logout(): Promise<void> {
-    await apiClient.get<void>('/auth/logout');
+    await apiClient.get<void>("/auth/logout");
   },
 
   async getPasskeyOptions(): Promise<PasskeyOptionsResponse> {
-    return apiClient.get<PasskeyOptionsResponse>('/auth/passkey/options');
+    return apiClient.get<PasskeyOptionsResponse>("/auth/passkey/options");
   },
 
   async verifyPasskey(payload: PasskeyVerifyRequest): Promise<User> {
     const res = await apiClient.post<BackendAuthResponse>(
-      '/auth/passkey/verify',
+      "/auth/passkey/verify",
       payload,
     );
     return extractUser(res);
@@ -113,13 +113,15 @@ export const authApi = {
 
   async getPasskeyRegistrationOptions(): Promise<PasskeyRegistrationOptionsResponse> {
     return apiClient.get<PasskeyRegistrationOptionsResponse>(
-      '/auth/passkey/registration-options',
+      "/auth/passkey/registration-options",
     );
   },
 
-  async verifyPasskeyRegistration(payload: PasskeyVerifyRequest): Promise<User> {
+  async verifyPasskeyRegistration(
+    payload: PasskeyVerifyRequest,
+  ): Promise<User> {
     const res = await apiClient.post<BackendAuthResponse>(
-      '/auth/passkey/registration/verify',
+      "/auth/passkey/verify-registration",
       payload,
     );
     return extractUser(res);
@@ -134,10 +136,13 @@ export const authApi = {
    */
   async getCurrentUser(): Promise<User | null> {
     try {
-      const res = await apiClient.get<BackendAuthResponse>('/auth/me');
+      const res = await apiClient.get<BackendAuthResponse>("/auth/me");
       return extractUser(res);
     } catch (err) {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      if (
+        err instanceof ApiError &&
+        (err.status === 401 || err.status === 403)
+      ) {
         return null;
       }
       throw err;
