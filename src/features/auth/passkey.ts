@@ -6,8 +6,6 @@ import {
 import type {
   AuthenticationResponseJSON,
   RegistrationResponseJSON,
-  PublicKeyCredentialRequestOptionsJSON,
-  PublicKeyCredentialCreationOptionsJSON,
 } from '@simplewebauthn/browser';
 import type {
   PasskeyOptionsResponse,
@@ -21,16 +19,11 @@ export function isPasskeySupported(): boolean {
 export async function authenticateWithPasskey(
   options: PasskeyOptionsResponse,
 ): Promise<AuthenticationResponseJSON> {
-  return startAuthentication({
-    optionsJSON: options as unknown as PublicKeyCredentialRequestOptionsJSON,
-  });
+  return startAuthentication({ optionsJSON: options });
 }
 
 export async function registerWithPasskey(
   options: PasskeyRegistrationOptionsResponse,
 ): Promise<RegistrationResponseJSON> {
-  return startRegistration({
-    optionsJSON:
-      options as unknown as PublicKeyCredentialCreationOptionsJSON,
-  });
+  return startRegistration({ optionsJSON: options });
 }

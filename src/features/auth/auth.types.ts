@@ -1,3 +1,10 @@
+import type {
+  AuthenticationResponseJSON,
+  RegistrationResponseJSON,
+  PublicKeyCredentialRequestOptionsJSON,
+  PublicKeyCredentialCreationOptionsJSON,
+} from '@simplewebauthn/browser';
+
 export interface User {
   id: string;
   email: string;
@@ -31,32 +38,14 @@ export interface AuthResult {
   user: User;
 }
 
-export interface PasskeyOptionsResponse {
-  challenge: string;
-  rpId?: string;
-  allowCredentials?: Array<{ id: string; type: string }>;
-  userVerification?: string;
-  timeout?: number;
-}
+export type PasskeyOptionsResponse = PublicKeyCredentialRequestOptionsJSON;
 
-export interface PasskeyRegistrationOptionsResponse {
-  challenge: string;
-  rp?: { name: string; id?: string };
-  user?: {
-    id: string;
-    name?: string;
-    displayName?: string;
-  };
-  pubKeyCredParams?: Array<{ type: string; alg: number }>;
-  timeout?: number;
-  excludeCredentials?: Array<{ id: string; type: string }>;
-  authenticatorSelection?: Record<string, unknown>;
-  attestation?: string;
-}
+export type PasskeyRegistrationOptionsResponse =
+  PublicKeyCredentialCreationOptionsJSON;
 
-export interface PasskeyVerifyRequest {
-  credential: unknown;
-}
+export type PasskeyVerifyRequest = {
+  credential: AuthenticationResponseJSON | RegistrationResponseJSON;
+};
 
 export interface BackendApiResponse<T> {
   statusCode: number;
