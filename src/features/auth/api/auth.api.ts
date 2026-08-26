@@ -100,12 +100,12 @@ export const authApi = {
   },
 
   async getPasskeyOptions(): Promise<PasskeyOptionsResponse> {
-    return apiClient.get<PasskeyOptionsResponse>("/auth/passkey/options");
+    return apiClient.get<PasskeyOptionsResponse>("/auth/passkey/auth-options");
   },
 
   async verifyPasskey(payload: PasskeyVerifyRequest): Promise<User> {
     const res = await apiClient.post<BackendAuthResponse>(
-      "/auth/passkey/verify",
+      "/auth/passkey/verify-auth",
       payload,
     );
     return extractUser(res);
