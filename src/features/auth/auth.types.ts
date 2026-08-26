@@ -57,3 +57,10 @@ export interface PasskeyRegistrationOptionsResponse {
 export interface PasskeyVerifyRequest {
   credential: unknown;
 }
+
+export interface BackendApiResponse<T> {
+  statusCode: number;
+  success: boolean;
+  message: string;
+  data: T;
+}

@@ -6,6 +6,7 @@ import type {
   PasskeyOptionsResponse,
   PasskeyRegistrationOptionsResponse,
   PasskeyVerifyRequest,
+  BackendApiResponse,
   User,
 } from "../auth.types";
 import { env } from "@/config/env";
@@ -100,7 +101,11 @@ export const authApi = {
   },
 
   async getPasskeyOptions(): Promise<PasskeyOptionsResponse> {
-    return apiClient.get<PasskeyOptionsResponse>("/auth/passkey/auth-options");
+    const res =
+      await apiClient.get<BackendApiResponse<PasskeyOptionsResponse>>(
+        "/auth/passkey/auth-options",
+      );
+    return res.data;
   },
 
   async verifyPasskey(payload: PasskeyVerifyRequest): Promise<User> {
@@ -112,9 +117,11 @@ export const authApi = {
   },
 
   async getPasskeyRegistrationOptions(): Promise<PasskeyRegistrationOptionsResponse> {
-    return apiClient.get<PasskeyRegistrationOptionsResponse>(
-      "/auth/passkey/registration-options",
-    );
+    const res =
+      await apiClient.get<
+        BackendApiResponse<PasskeyRegistrationOptionsResponse>
+      >("/auth/passkey/registration-options");
+    return res.data;
   },
 
   async verifyPasskeyRegistration(

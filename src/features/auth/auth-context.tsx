@@ -81,16 +81,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const loginWithPasskey = useCallback(async () => {
-    const { data: options } = await authApi.getPasskeyOptions();
+    const options = await authApi.getPasskeyOptions();
     const credential = await authenticateWithPasskey(options);
-    const user = await authApi.verifyPasskey(credential);
+    const user = await authApi.verifyPasskey({ credential });
     setUser(user);
   }, []);
 
   const registerPasskey = useCallback(async () => {
-    const { data: options } = await authApi.getPasskeyRegistrationOptions();
+    const options = await authApi.getPasskeyRegistrationOptions();
     const credential = await registerWithPasskey(options);
-    const user = await authApi.verifyPasskeyRegistration(credential);
+    const user = await authApi.verifyPasskeyRegistration({ credential });
     setUser(user);
   }, []);
 
