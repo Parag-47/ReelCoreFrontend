@@ -3,7 +3,7 @@ import type {
   RegistrationResponseJSON,
   PublicKeyCredentialRequestOptionsJSON,
   PublicKeyCredentialCreationOptionsJSON,
-} from '@simplewebauthn/browser';
+} from "@simplewebauthn/browser";
 
 export interface User {
   id: string;
@@ -17,7 +17,7 @@ export interface User {
   authProvider?: AuthProvider;
 }
 
-export type AuthProvider = 'email' | 'google' | 'passkey';
+export type AuthProvider = "email" | "google" | "passkey";
 
 export interface LoginRequest {
   identifier: string;
@@ -43,9 +43,9 @@ export type PasskeyOptionsResponse = PublicKeyCredentialRequestOptionsJSON;
 export type PasskeyRegistrationOptionsResponse =
   PublicKeyCredentialCreationOptionsJSON;
 
-export type PasskeyVerifyRequest = {
-  credential: AuthenticationResponseJSON | RegistrationResponseJSON;
-};
+export type PasskeyVerifyRequest =
+  | AuthenticationResponseJSON
+  | RegistrationResponseJSON;
 
 export interface BackendApiResponse<T> {
   statusCode: number;
